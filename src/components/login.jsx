@@ -1,14 +1,19 @@
-import React, { useState } from 'react'
-import { instance } from '../config/api'
+import React, { useEffect, useState } from 'react'
+import { instance, userLogin } from '../config/api'
+import { useDispatch, useSelector } from 'react-redux'
+import { login } from '../redux/authSlicer';
 
 
 export default function Login() {
 
-const [formData, setFormData] = useState({
+const { user } = useSelector((state) => state.auth);
+const dispatch = useDispatch()
+
+
+  const [formData, setFormData] = useState({
     "email" : '',
     "password": ''
 })
-
 const changeHandler = (e) => {
     setFormData((prev) => {
         prev[e.target.name] = e.target.value;
@@ -17,14 +22,17 @@ const changeHandler = (e) => {
 }
 
 const clickHandler = async () => {
-  try{
-    const data = await instance.post('/auth/login', formData);
-    console.log(data)
-  }catch(e){
-    console.log(e)
-  }
+  userLogin(formData).then((data) => {
+      dispatch(login(data))
+  }).catch(() => {
+    alert('You cant login to this account')
+  })
+  
     
 }
+
+if(user) return <h1>{user.email} :  It's already connected</h1>
+
   return (
     <div className='flex flex-col'>
     <input className='bg-sky-100 border-2' type="email" value={formData.email} name="email" onChange={changeHandler} />

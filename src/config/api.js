@@ -9,6 +9,7 @@ export const instance = axios.create({
 
 instance.interceptors.request.use((cfg) => {
     console.log("Request sended")
+    cfg.headers['Authorization'] = `Bearer ${localStorage.getItem('auth_token')}`
     return cfg
 })
 
@@ -18,3 +19,26 @@ instance.interceptors.response.use((cfg) => {
 }, ()=> {
         console.log("there is an error here")
 })
+
+
+
+export const userLogin = async (formData) => {
+    try{
+        const response = await instance.post('/auth/login', formData);
+        localStorage.setItem('auth_token', response.data.token)
+        return response.data;
+    }catch{
+        throw new Error('THere is an error on log in')
+    }
+}
+
+export const verifyToken = async (token) => {
+    if(!token) return ;
+    try{
+        const response = await instance.get('/auth/me');
+        console.log("good")
+        return response.data;
+    }catch{
+        throw new Error('error')
+    }
+}
