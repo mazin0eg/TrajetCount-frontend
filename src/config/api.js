@@ -8,16 +8,12 @@ export const instance = axios.create({
 })
 
 instance.interceptors.request.use((cfg) => {
-    console.log("Request sended")
     cfg.headers['Authorization'] = `Bearer ${localStorage.getItem('auth_token')}`
     return cfg
 })
 
 instance.interceptors.response.use((cfg) => {
-    console.log(cfg.status)
     return cfg;
-}, ()=> {
-        console.log("there is an error here")
 })
 
 
@@ -33,12 +29,11 @@ export const userLogin = async (formData) => {
 }
 
 export const verifyToken = async (token) => {
-    if(!token) return ;
+    if(!token) throw new Error('No token provided') ;
     try{
         const response = await instance.get('/auth/me');
-        console.log("good")
         return response.data;
     }catch{
-        throw new Error('error')
+        localStorage.removeItem('auth_token')
     }
 }
