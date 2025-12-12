@@ -7,7 +7,6 @@ export default function Register() {
     const { user, isConnected, isLoading } = useSelector((state) => state.auth);
     const navigate = useNavigate();
     
-    // Check if user is already authenticated
     useEffect(() => {
       if (isConnected && user) {
         // Redirect based on user role
@@ -19,7 +18,7 @@ export default function Register() {
       }
     }, [isConnected, user, navigate]);
 
-    // Show loading while checking authentication
+   
     if (isLoading) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-black">
@@ -28,7 +27,7 @@ export default function Register() {
       );
     }
 
-    // If user is authenticated, don't render register form (will redirect via useEffect)
+    
     if (isConnected && user) {
       return null;
     }

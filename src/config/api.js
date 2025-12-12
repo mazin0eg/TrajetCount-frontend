@@ -37,3 +37,12 @@ export const verifyToken = async (token) => {
         localStorage.removeItem('auth_token')
     }
 }
+
+export const getDashboardStats = async () => {
+    try{
+        const response = await instance.get('/admin/dashboard');
+        return response.data;
+    }catch{
+        throw new Error('Failed to fetch dashboard stats')
+    }
+}

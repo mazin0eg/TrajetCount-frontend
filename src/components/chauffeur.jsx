@@ -1,10 +1,8 @@
 import React from 'react'
+import Navbar from '../layout/navbar'
 
 export default function Chauffeur() {
   return (
-    <div>
-      <h1>Chauffeur Dashboard</h1>
-      <p>Welcome to the Chauffeur interface!</p>
-    </div>
+    <Navbar/>
   )
 }

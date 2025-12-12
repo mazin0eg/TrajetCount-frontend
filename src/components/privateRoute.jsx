@@ -1,26 +1,41 @@
 import React, { useEffect, useState } from 'react'
-import { verifyToken } from '../config/api';
-import { Navigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux'
+import { verificationThunk } from '../redux/authSlicer'
+import { Navigate } from 'react-router-dom'
 
-export default function PrivateRoute({children }) {
+export default function PrivateRoute({ children, allowedRoles = [] }) {
+  const dispatch = useDispatch()
+  const { isConnected, user, token, isLoading } = useSelector((state) => state.auth)
+  const [authChecked, setAuthChecked] = useState(false)
 
-  const [loading, setLoading] = useState(true);
-    const [isAuth, setIsAuth] = useState(false);
-    useEffect(()=>{
-      const token = localStorage.getItem("auth_token");
-      verifyToken(token)
-            .then(() => {
-                setIsAuth(true);
-            })
-            .catch(() => {
-                setIsAuth(false);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    }, [])
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (token && !isConnected) {
+        try {
+          await dispatch(verificationThunk(token)).unwrap()
+        } catch (error) {
+          console.log('Token verification failed')
+        }
+      }
+      setAuthChecked(true)
+    }
+    
+    checkAuth()
+  }, [token, isConnected, dispatch])
 
-     if (loading) return <p>Loading...</p>;
-  return isAuth ? children : <Navigate to="/login" />
-  
+  if (!authChecked || isLoading) {
+    return <div className="flex items-center justify-center h-screen">
+      <div className="text-white">Loading...</div>
+    </div>
+  }
+
+  if (!isConnected || !user) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/unauthorized" replace />
+  }
+
+  return children
 }

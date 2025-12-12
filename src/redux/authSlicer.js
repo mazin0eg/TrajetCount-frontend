@@ -1,37 +1,24 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { userLogin, verifyToken } from '../config/api';
 
-
 const initialState = {
   isConnected: false,
   user: null,
   token: localStorage.getItem('auth_token') || null,
-  isLoading: true
+  isLoading: false
 }
 
 export const verificationThunk = createAsyncThunk('VERIFICATION', async (token) => {
   const data = await verifyToken(token);
   if(data)
     return data;
-  throw new Error('error')
+  throw new Error('Token verification failed')
 })
-
-/* export const loginThunk = createAsyncThunk('LOGIN', async (data) => { 
-  return await userLogin(data)
-}) */
 
 export const loginThunk = createAsyncThunk("LOGIN",async ({ formData, navigate }, thunkAPI) => {
     try {
       const data = await userLogin(formData);
-
-      // Store token in localStorage
       localStorage.setItem('auth_token', data.token);
-
-      if (data.user.role === "Chauffeur") {
-        navigate("/", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
 
       return data;
     } catch (err) {
@@ -39,8 +26,6 @@ export const loginThunk = createAsyncThunk("LOGIN",async ({ formData, navigate }
     }
   }
 );
-
-
 
 export const authentificationSlicer = createSlice({
   name: 'auth',
@@ -56,47 +41,48 @@ export const authentificationSlicer = createSlice({
       state.isConnected = false;
       state.user = null;
       state.token = null;
+      state.isLoading = false;
       localStorage.removeItem('auth_token');
     },
-    update: (state, action) => {
-     
-    },
-    verifyUser: () => {
-        
+    setLoading: (state, action) => {
+      state.isLoading = action.payload;
     }
   },
   extraReducers: (builder) => {
-    builder.addCase(
-      verificationThunk.fulfilled,
-      (state, { payload }) => {
-        if(payload?.username){
-          state.user = { email : payload?.username}
-          state.isConnected = true;
-          state.isLoading = false
-        }
-        
-      },
-    ).addCase(loginThunk.fulfilled, (state, {payload}) => {
-      if(payload && payload?.user && payload?.token)
-      {
-        state.user = payload?.user;
-        state.token = payload?.token;
-        state.isConnected = true;
-        state.isLoading = false;
-        localStorage.setItem('auth_token', payload.token);
-      }
-
-    }).addCase(verificationThunk.rejected,  (state, { payload }) => {
-        
-          state.user = null
-          state.isConnected = false;
-          state.isLoading = false
-        
+    builder
+      .addCase(verificationThunk.pending, (state) => {
+        state.isLoading = true;
       })
-
+      .addCase(verificationThunk.fulfilled, (state, { payload }) => {
+        if(payload?.username || payload?.user) {
+          state.user = payload?.user || { email: payload?.username, role: payload?.role };
+          state.isConnected = true;
+          state.isLoading = false;
+        }
+      })
+      .addCase(verificationThunk.rejected, (state) => {
+        state.user = null;
+        state.isConnected = false;
+        state.isLoading = false;
+        state.token = null;
+        localStorage.removeItem('auth_token');
+      })
+      .addCase(loginThunk.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(loginThunk.fulfilled, (state, {payload}) => {
+        if(payload && payload?.user && payload?.token) {
+          state.user = payload?.user;
+          state.token = payload?.token;
+          state.isConnected = true;
+          state.isLoading = false;
+        }
+      })
+      .addCase(loginThunk.rejected, (state) => {
+        state.isLoading = false;
+      });
   },
 })
 
-export const { login, logout, update, verifyUser } = authentificationSlicer.actions
-
+export const { login, logout, setLoading } = authentificationSlicer.actions
 export default authentificationSlicer.reducer
