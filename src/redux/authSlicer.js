@@ -16,18 +16,47 @@ export const verificationThunk = createAsyncThunk('VERIFICATION', async (token) 
   throw new Error('error')
 })
 
-export const loginThunk = createAsyncThunk('LOGIN', async (data) => {
+/* export const loginThunk = createAsyncThunk('LOGIN', async (data) => { 
   return await userLogin(data)
-})
+}) */
+
+export const loginThunk = createAsyncThunk("LOGIN",async ({ formData, navigate }, thunkAPI) => {
+    try {
+      const data = await userLogin(formData);
+
+      // Store token in localStorage
+      localStorage.setItem('auth_token', data.token);
+
+      if (data.user.role === "Chauffeur") {
+        navigate("/", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+
+      return data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue("Login failed");
+    }
+  }
+);
+
+
 
 export const authentificationSlicer = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    login: (state, action) => {
+      state.isConnected = true;
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isLoading = false;
+    },
     logout: (state) => {
       state.isConnected = false;
       state.user = null;
       state.token = null;
+      localStorage.removeItem('auth_token');
     },
     update: (state, action) => {
      
@@ -53,6 +82,8 @@ export const authentificationSlicer = createSlice({
         state.user = payload?.user;
         state.token = payload?.token;
         state.isConnected = true;
+        state.isLoading = false;
+        localStorage.setItem('auth_token', payload.token);
       }
 
     }).addCase(verificationThunk.rejected,  (state, { payload }) => {

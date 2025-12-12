@@ -1,8 +1,38 @@
-import React , { useState} from 'react'
+import React , { useState, useEffect} from 'react'
 import { instance } from '../config/api'
-import { redirect } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 export default function Register() {
+    const { user, isConnected, isLoading } = useSelector((state) => state.auth);
+    const navigate = useNavigate();
+    
+    // Check if user is already authenticated
+    useEffect(() => {
+      if (isConnected && user) {
+        // Redirect based on user role
+        if (user.role === "Chauffeur") {
+          navigate("/", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
+      }
+    }, [isConnected, user, navigate]);
+
+    // Show loading while checking authentication
+    if (isLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-black">
+          <div className="text-white text-xl">Loading...</div>
+        </div>
+      );
+    }
+
+    // If user is authenticated, don't render register form (will redirect via useEffect)
+    if (isConnected && user) {
+      return null;
+    }
+    
     const [formData, setFormData] = useState({
     "username": "",
     "email": "",
@@ -21,7 +51,7 @@ export default function Register() {
       try{
         const data = await instance.post('/auth/register', formData);
         console.log("user registred" ,data)
-       redirect("/login")
+        navigate("/login")
       }catch(e){
         console.log(e)
       }

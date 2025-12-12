@@ -2,30 +2,60 @@ import React, { useEffect, useState } from 'react'
 import { instance, userLogin } from '../config/api'
 import { useDispatch, useSelector } from 'react-redux'
 import { login, loginThunk } from '../redux/authSlicer';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 
-export default function Login() {
+  export default function Login() {
 
-const { user } = useSelector((state) => state.auth);
-const dispatch = useDispatch()
+  const { user, isConnected, isLoading } = useSelector((state) => state.auth);
+  const navigate = useNavigate(); 
+  const dispatch = useDispatch()
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    if (isConnected && user) {
+      // Redirect based on user role
+      if (user.role === "Chauffeur") {
+        navigate("/", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+    }
+  }, [isConnected, user, navigate]);
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // If user is authenticated, don't render login form (will redirect via useEffect)
+  if (isConnected && user) {
+    return null;
+  }
 
 
-  const [formData, setFormData] = useState({
-    "email" : '',
-    "password": ''
-})
-const changeHandler = (e) => {
-    setFormData((prev) => {
-        prev[e.target.name] = e.target.value;
-        return {...prev};
-    })
-}
+    const [formData, setFormData] = useState({
+      "email" : '',
+      "password": ''
+  })
+ const changeHandler = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-const clickHandler = async () => {
-  dispatch(loginThunk(formData))  
-}
+  const clickHandler = async () => {
+    dispatch(loginThunk({ formData, navigate }))  
+  }
 
-if(user) return <h1>{user.email} :  It's already connected</h1>
+
+
+
 
  /* return (
     <div className='flex flex-col'>

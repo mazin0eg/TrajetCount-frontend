@@ -8,6 +8,8 @@ import NotFound from './components/notfound.jsx';
 import { verifyToken } from './config/api.js';
 import { verificationThunk } from './redux/authSlicer.js';
 import Dashbord from './components/dashbord.jsx';
+import Chauffeur from './components/chauffeur.jsx';
+import PrivateRoute from './components/privateRoute.jsx';
 
 store.dispatch(verificationThunk(localStorage.getItem('auth_token')))
 
@@ -20,7 +22,10 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path='/' element={<Dashbord/>}/>
+            
+            <Route path='/' element={<PrivateRoute> <Chauffeur/>  </PrivateRoute>}/>
+            <Route path='/dashboard' element={<PrivateRoute> <Dashbord/>  </PrivateRoute>}/>
+            
         </Routes>
       </BrowserRouter>}</>
  
