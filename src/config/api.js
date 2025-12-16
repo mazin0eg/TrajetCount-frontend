@@ -46,3 +46,21 @@ export const getDashboardStats = async () => {
         throw new Error('Failed to fetch dashboard stats')
     }
 }
+
+export const getRecentTrajets = async (limit = 10) => {
+    try{
+        const response = await instance.get(`/trajets?limit=${limit}&sort=-createdAt`);
+        return response.data;
+    }catch{
+        throw new Error('Failed to fetch recent trajets')
+    }
+}
+
+export const deleteTrajet = async (trajetId) => {
+    try{
+        const response = await instance.delete(`/trajets/${trajetId}`);
+        return response.data;
+    }catch{
+        throw new Error('Failed to delete trajet')
+    }
+}

@@ -8,6 +8,11 @@ import Dashbord from './components/dashbord'
 import Chauffeur from './components/chauffeur'
 import PrivateRoute from './components/privateRoute'
 import Unauthorized from './components/unauthorized'
+import AdminCamions from './components/admin/camions'
+import AdminRemorques from './components/admin/remorques'
+import AdminPneus from './components/admin/pneus'
+import AdminChauffeurs from './components/admin/chauffeurs'
+import AdminTrajets from './components/admin/trajets'
 
 function App() {
   const dispatch = useDispatch()
@@ -44,8 +49,53 @@ function App() {
         <Route 
           path="/dashboard" 
           element={
-            <PrivateRoute allowedRoles={["admin", "Chauffeur"]}>
+            <PrivateRoute allowedRoles={["admin"]}>
               <Dashbord />
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin/camions" 
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <AdminCamions />
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin/remorques" 
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <AdminRemorques />
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin/pneus" 
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <AdminPneus />
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin/chauffeurs" 
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <AdminChauffeurs />
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin/trajets" 
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <AdminTrajets />
             </PrivateRoute>
           } 
         />

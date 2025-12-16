@@ -4,7 +4,7 @@ import { logout } from '../redux/authSlicer'
 import { useNavigate } from 'react-router-dom'
 
 export default function Navbar() {
-  const { isConnected } = useSelector((state) => state.auth)
+  const { isConnected, user } = useSelector((state) => state.auth)
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
@@ -12,6 +12,8 @@ export default function Navbar() {
     dispatch(logout())
     navigate('/login')
   }
+
+  const isAdmin = user?.role === 'admin'
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-neutral-900/90 backdrop-blur-md border-b border-neutral-800">
       
@@ -21,21 +23,50 @@ export default function Navbar() {
          
           <div className="shrink-0">
             <a href="/" className="text-2xl font-bold text-white tracking-tighter hover:text-orange-500 transition-colors">
-              Brand<span className="text-orange-500">Name</span>
+              Traget<span className="text-orange-500">Count</span>
             </a>
           </div>
 
           
           <div className="hidden md:flex items-center space-x-8">
-            <a href="/" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
-              Home
-            </a>
-            <a href="/features" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
-              Features
-            </a>
-            <a href="/about" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
-              About
-            </a>
+            {isConnected && isAdmin ? (
+              <>
+                <a href="/dashboard" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
+                  Dashboard
+                </a>
+                <a href="/admin/camions" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
+                  Camions
+                </a>
+                <a href="/admin/remorques" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
+                  Remorques
+                </a>
+                <a href="/admin/pneus" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
+                  Pneus
+                </a>
+                <a href="/admin/chauffeurs" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
+                  Chauffeurs
+                </a>
+                <a href="/admin/trajets" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
+                  Trajets
+                </a>
+              </>
+            ) : isConnected ? (
+              <a href="/" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
+                Home
+              </a>
+            ) : (
+              <>
+                <a href="/" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
+                  Home
+                </a>
+                <a href="/features" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
+                  Features
+                </a>
+                <a href="/about" className="text-sm font-medium text-neutral-300 hover:text-white hover:border-b-2 hover:border-orange-500 transition-all duration-100 h-8 flex items-center">
+                  About
+                </a>
+              </>
+            )}
           </div>
 
           
