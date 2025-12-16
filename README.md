@@ -149,7 +149,7 @@ src/
 3. **Environment Configuration**
    ```bash
    # Create .env file (if needed)
-   VITE_API_BASE_URL=http://localhost:3000/api
+   VITE_API_URL=http://localhost:3000/api
    ```
 
 4. **Start development server**
@@ -161,6 +161,24 @@ src/
    ```bash
    npm run build
    ```
+
+## 🐳 Docker
+
+Build a production-ready image (pass your API URL at build time):
+
+```bash
+docker build -t trajetcount-frontend --build-arg VITE_API_URL=https://api.example.com .
+```
+
+Run the container (exposes Nginx on port 4173 by default):
+
+```bash
+docker run -d -p 4173:80 --name trajetcount-frontend trajetcount-frontend
+```
+
+Notes:
+- The `VITE_API_URL` arg is baked into the frontend at build time; set it to your backend URL (e.g., `http://localhost:3000/api` or your deployed API).
+- SPA routing is handled via Nginx fallback to `index.html`.
 
 ## 🎮 Usage
 

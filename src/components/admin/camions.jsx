@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Navbar from '../../layout/navbar'
+import { instance } from '../../config/api'
 
 export default function AdminCamions() {
   const [camions, setCamions] = useState([])
@@ -23,23 +24,13 @@ export default function AdminCamions() {
   useEffect(() => {
     const fetchCamions = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:3000/api/camions', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-          }
-        })
-        
-        if (response.ok) {
-          const data = await response.json()
-          console.log('Camions data:', data) 
-          setCamions(Array.isArray(data) ? data : data.camions || [])
-        } else {
-          console.error('Response not ok:', response.status)
-          setError('Failed to fetch camions')
-        }
+        const { data } = await instance.get('/camions')
+        console.log('Camions data:', data)
+        setCamions(Array.isArray(data) ? data : data.camions || [])
       } catch (err) {
         console.error('Fetch error:', err)
         setError('Failed to fetch camions')
+        setCamions([]) // allow UI and add form even on empty/404
       } finally {
         setLoading(false)
       }
@@ -51,18 +42,8 @@ export default function AdminCamions() {
   const handleDeleteCamion = async (camionId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce camion ?')) {
       try {
-        const response = await fetch(`http://127.0.0.1:3000/api/camions/${camionId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-          }
-        })
-        
-        if (response.ok) {
-          setCamions(camions.filter(c => c._id !== camionId))
-        } else {
-          alert('Erreur lors de la suppression du camion')
-        }
+        await instance.delete(`/camions/${camionId}`)
+        setCamions(camions.filter(c => c._id !== camionId))
       } catch (err) {
         alert('Erreur lors de la suppression du camion')
       }
@@ -129,22 +110,10 @@ export default function AdminCamions() {
         kilometrage: addForm.kilometrage || 0
       }
 
-      const response = await fetch('http://127.0.0.1:3000/api/camions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify(camionData)
-      })
-      
-      if (response.ok) {
-        const newCamion = await response.json()
-        setCamions([...camions, newCamion])
-        handleCloseAddModal()
-      } else {
-        alert('Erreur lors de l\'ajout du camion')
-      }
+      const { data } = await instance.post('/camions', camionData)
+      const newCamion = data?.camion || data
+      setCamions([...camions, newCamion])
+      handleCloseAddModal()
     } catch (err) {
       alert('Erreur lors de l\'ajout du camion')
     }
@@ -160,27 +129,15 @@ export default function AdminCamions() {
         disponible: editForm.disponible
       }
 
-      const response = await fetch(`http://127.0.0.1:3000/api/camions/${editForm._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify(camionData)
-      })
-      
-      if (response.ok) {
-        const updatedCamion = {
-          ...editForm,
-          kilometrage: parseInt(editForm.kilometrage) || 0
-        }
-        setCamions(prevCamions => 
-          prevCamions.map(c => c._id === editForm._id ? updatedCamion : c)
-        )
-        handleCloseEditModal()
-      } else {
-        alert('Erreur lors de la modification du camion')
+      await instance.put(`/camions/${editForm._id}`, camionData)
+      const updatedCamion = {
+        ...editForm,
+        kilometrage: parseInt(editForm.kilometrage) || 0
       }
+      setCamions(prevCamions => 
+        prevCamions.map(c => c._id === editForm._id ? updatedCamion : c)
+      )
+      handleCloseEditModal()
     } catch (err) {
       alert('Erreur lors de la modification du camion')
     }
@@ -197,22 +154,16 @@ export default function AdminCamions() {
     )
   }
 
-  if (error) {
-    return (
-      <>
-        <Navbar />
-        <div className="min-h-screen bg-black pt-20 flex items-center justify-center">
-          <div className="text-red-500 text-xl">{error}</div>
-        </div>
-      </>
-    )
-  }
-
   return (
     <>
       <Navbar />
       <div className="min-h-screen bg-black pt-20 px-4">
         <div className="max-w-7xl mx-auto py-8">
+          {error && (
+            <div className="mb-4 rounded-lg border border-red-800 bg-red-900/40 px-4 py-3 text-red-200">
+              {error}
+            </div>
+          )}
           <div className="mb-8">
             <div className="flex justify-between items-center">
               <div>
